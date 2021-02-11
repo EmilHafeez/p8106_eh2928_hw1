@@ -22,7 +22,7 @@ header-includes:
 
 ## Setup
 
-```{r libraries}
+```{r libraries, include = F}
 library(lme4)
 library(lmerTest)
 library(tidyverse)
