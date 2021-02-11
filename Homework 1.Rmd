@@ -4,6 +4,7 @@ author: "Emil Hafeez"
 geometry: "left=2.57cm,right=2.57cm,top=2.57cm,bottom=2.57cm"
 output:
   pdf_document:
+    latex_engine: xelatex
     toc: yes
     toc_depth: 3
   html_document:
@@ -18,9 +19,9 @@ header-includes:
 - \fancypagestyle{plain}{\pagestyle{fancy}}
 --- 
 
-# Section 1: Data Manipulation
+# Section 1: Setup
 
-## Setup
+## Libraries and Options
 
 ```{r libraries, include = F}
 library(lme4)
@@ -31,7 +32,7 @@ library(plyr)
 library(patchwork)
 ```
 
-```{r opts chunk}
+```{r opts chunk, include = F}
 knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60))
 
 knitr::opts_chunk$set(echo = TRUE)
@@ -42,4 +43,28 @@ options(
 ```
 
 
-## Load data
+## Prompt
+
+In this exercise, we will predict solubility of compounds using their chemical structures.
+
+The training data are in the file “solubility train.csv” and the test data are in “solubil-
+ity test.csv”. Among the 228 predictors, 208 are binary variables that indicate the presence
+
+or absence of a particular chemical substructure, 16 are count features, such as the number
+of bonds or the number of bromine atoms, and 4 are continuous features, such as molecular
+weight or surface area. The response is in the column “Solubility” (the last column).
+
+## Questions
+
+(a) Fit a linear model using least squares on the training data and calculate the mean
+squared error using the test data.
+(b) Fit a ridge regression model on the training data, with λ chosen by cross-validation.
+Report the test error.
+(c) Fit a lasso model on the training data, with λ chosen by cross-validation. Report the
+test error and the number of non-zero coefficient estimates in your model.
+(d) Fit a principle component regression model on the training data, with M chosen by
+cross-validation. Report the test error and the value of M selected by cross-validation.
+(e) Which model will you choose for predicting solubility?
+
+# Section 2: Implementation and Results
+
