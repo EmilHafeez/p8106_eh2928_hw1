@@ -1,0 +1,45 @@
+---
+title: "P8106 Data Science Homework 1"
+author: "Emil Hafeez"
+geometry: "left=2.57cm,right=2.57cm,top=2.57cm,bottom=2.57cm"
+output:
+  pdf_document:
+    toc: yes
+    toc_depth: 3
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_depth: '3'
+header-includes:
+- \usepackage{fancyhdr}
+- \usepackage{lipsum}
+- \pagestyle{fancy}
+- \fancyhead[R]{\thepage}
+- \fancypagestyle{plain}{\pagestyle{fancy}}
+--- 
+
+# Section 1: Data Manipulation
+
+## Setup
+
+```{r libraries}
+library(lme4)
+library(lmerTest)
+library(tidyverse)
+library(ggplot2)
+library(plyr)
+library(patchwork)
+```
+
+```{r opts chunk}
+knitr::opts_chunk$set(tidy.opts=list(width.cutoff=60))
+
+knitr::opts_chunk$set(echo = TRUE)
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+```
+
+
+## Load data
