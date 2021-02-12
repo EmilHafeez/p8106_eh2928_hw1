@@ -24,12 +24,13 @@ header-includes:
 ## Libraries and Options
 
 ```{r libraries, include = F}
-library(lme4)
-library(lmerTest)
+library(RNHANES)
 library(tidyverse)
+library(summarytools)
+library(leaps)
 library(ggplot2)
-library(plyr)
-library(patchwork)
+library(caret)
+library(corrplot)
 ```
 
 ```{r opts chunk, include = F}
@@ -42,11 +43,12 @@ options(
 )
 ```
 
-```{r input}
-train_dataframe = read_csv("./data/solubility_train.csv")
+```{r input, message = F}
+train_data = read_csv("./data/solubility_train.csv")
+test_data = read_csv("./data/solubility_test.csv")
 
+set.seed(1993)
 ```
-
 
 ## Prompt
 
@@ -72,12 +74,40 @@ weight or surface area. The response is in the column “Solubility” (the last
 (e) Which model will you choose for predicting solubility?
 
 # Section 2: Implementation and Results
-(a) Fit a linear model using least squares on the training data and calculate the mean squared error using the test data.
+
+The dataframe consists of 229 variables, and it would therefore be computationally laborious to compute all or best subsets and choose that way.
+
+Note that in performing cross-validation, you want to apply CV both when finding the predictors with the largest correlation with the response; and, you want to do it when fitting the model using only those predictors. 
+
+There are a large number of predictors and potential collinearity (implying large variance), but a linear model is implemented to start.
 
 ```{r}
+corrplot(cor(train_data), method = "circle", type = "upper")
 
+regsubsetsObj <- regsubsets(hdl ~ ., data = train_data, method = "exhaustive", nbest = 1)
+
+plot(regsubsetsObj, scale = "bic")
 ```
 
+
+```{r}
+set.seed(1993)
+control_cv <- trainControl(method = "cv", number = 10) 
+
+fit.lm <- train(Solubility~.,
+          data = train_data,
+          method = "lm",
+          trControl = control_cv)
+```
+
+```{r}
+#Fitting training model on test set
+pred=predict(model,newdata=test)
+#Calculating Accuracy
+MSE=mean((test$Apps-pred)^2)
+#Printing MSE
+print(MSE)
+```
 
 
 
