@@ -42,6 +42,11 @@ options(
 )
 ```
 
+```{r input}
+train_dataframe = read_csv("./data/solubility_train.csv")
+
+```
+
 
 ## Prompt
 
@@ -56,15 +61,32 @@ weight or surface area. The response is in the column “Solubility” (the last
 
 ## Questions
 
-(a) Fit a linear model using least squares on the training data and calculate the mean
-squared error using the test data.
-(b) Fit a ridge regression model on the training data, with λ chosen by cross-validation.
-Report the test error.
-(c) Fit a lasso model on the training data, with λ chosen by cross-validation. Report the
-test error and the number of non-zero coefficient estimates in your model.
-(d) Fit a principle component regression model on the training data, with M chosen by
-cross-validation. Report the test error and the value of M selected by cross-validation.
+(a) Fit a linear model using least squares on the training data and calculate the mean squared error using the test data.
+
+(b) Fit a ridge regression model on the training data, with λ chosen by cross-validation. Report the test error.
+
+(c) Fit a lasso model on the training data, with λ chosen by cross-validation. Report the test error and the number of non-zero coefficient estimates in your model.
+
+(d) Fit a principle component regression model on the training data, with M chosen by cross-validation. Report the test error and the value of M selected by cross-validation.
+
 (e) Which model will you choose for predicting solubility?
 
 # Section 2: Implementation and Results
+(a) Fit a linear model using least squares on the training data and calculate the mean squared error using the test data.
+
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
 
