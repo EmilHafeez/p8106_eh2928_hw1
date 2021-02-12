@@ -19,18 +19,6 @@ header-includes:
 - \fancypagestyle{plain}{\pagestyle{fancy}}
 --- 
 
-EMIL:
-DO YOU NEED TO CV ON THE TEST DATASET TOO? FOR ALL PROBLEMS
-DOES RIDGE REGRESSION REQUIRE THE X PASSED IN TO BE THE MATRIX SHE STANDARDIZES IN L5RMD???
-
-There were missing values in resampled performance measures. for ridge reg??
-
-DO RMSE AT THE END USING RESAMPLE
-
-WHY IS THE LAMBDA BEING CHOSEN NOT AT THE LOWEST RMSE?
-
-
-
 # Section 1: Setup
 
 ## Libraries and Options
@@ -86,7 +74,7 @@ The training data are in the file “solubility train.csv” and the test data a
 Results of MSE comparison appear at the end.
 
 ## Problem A)
-The dataframe consists of 229 variables. There are a large number of predictors and potential collinearity (implying large variance), but a linear model is implemented to start. While it would therefore be computationally unwise to compute all or best subsets and choose that way, this approach is included for sake of completeness
+The dataframe consists of 229 variables. There are a large number of predictors and potential collinearity (implying large variance), but a linear model is implemented to start. While it would therefore be computationally unwise to compute all or best subsets and choose that way, this approach is included for sake of completeness.
 
 Note that in performing cross-validation, you want to apply CV both when finding the predictors with the largest correlation with the response; and, you want to do it when fitting the model using only those predictors. 
 
@@ -101,9 +89,9 @@ plot(regsubsets_obj, scale = "bic")
 ```
 
 We train the model using cross-validation.
-```{r lm, cache = T, message=F}
+```{r lm, cache = F, warning = F}
 set.seed(1993)
-control_cv <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
+control_cv <- trainControl(method = "repeatedcv", number = 20, repeats = 5)
 
 # lm(Solubility ~ ., data = train_data)
 
@@ -113,6 +101,7 @@ fit.lm <- train(Solubility~.,
           trControl = control_cv)
 
 # fit.lm$finalModel
+# I am aware of this error: thus far TAs are justifiedly unsure. Posted to discussion board.
 ```
 
 Then, we apply the model to the test data and obtain the MSE for evaluation purposes.
@@ -126,20 +115,20 @@ rmse_lm
 ## Problem B)
 
 Since regularization methods like ridge regression is not scale-invariant like LS methods (since ridge regression minimizes the objective function which includes a penalty term) so we must standardize our predictors first.
-```{r ridge, cache = T}
-train_data_model_matrix <- model.matrix(Solubility ~ ., train_data)[ ,-1]
+```{r ridge, cache = F}
+train_data_model_matrix <- model.matrix(Solubility ~ ., train_data)[,-1] #note that we drop the intercept which equals 1
 
-control_object <- trainControl(method = "repeatedcv", number = 10, repeats = 5)
+control_object <- trainControl(method = "repeatedcv", number = 20, repeats = 5)
 
 set.seed(1993)
 ridge.fit <- train(train_data_model_matrix, train_data$Solubility,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = 0, 
-                                          lambda = exp(seq(7, -3, length=100))),
+                                          lambda = exp(seq(5, -3, length=100))),
                    # preProc = c(scale), glmnet does this by default
                    trControl = control_object)
 
-plot(ridge.fit, xTrans = log)
+plot(ridge.fit, xTrans = log) #note that this is on the log scale so the U shape is not visible
 
 #ridge.fit$bestTune
 #coef(ridge.fit$finalModel, s = ridge.fit$bestTune$lambda)
@@ -155,17 +144,17 @@ Given such a complex model, using a method like LASSO will provide useful variab
 
 We must also remember to standardize the predictors here. 
 
-```{r lasso, cache = T}
+```{r lasso, cache = F}
 set.seed(1993)
 lasso.fit <- train(train_data_model_matrix, train_data$Solubility,
                    method = "glmnet",
                    tuneGrid = expand.grid(alpha = 1, 
-                                          lambda = exp(seq(1, -20, length=100))),
+                                          lambda = exp(seq(2, -2, length=100))),
                    # preProc = c(scale), glmnet does this by default
                    trControl = control_object)
 
 plot(lasso.fit, xTrans = log)
-lasso.fit$bestTune$lambda
+#lasso.fit$bestTune$lambda
 #lasso.fit$bestTune
 
 non_zero_coefficients_lasso = coef(lasso.fit$finalModel, s = lasso.fit$bestTune$lambda)
@@ -179,8 +168,43 @@ The optimal value of lambda chosen by repeated cross-validation is `r lasso.fit$
 
 Fit a principle component regression model on the training data, with M chosen by cross-validation. Report the test error and the value of M selected by cross-validation.
 
+M can be viewed as a tuning parameter, which we select using cross-validation. Since deriving the \(Z_m\) values us not dependent on the response variable, dimension reduction is unsupervised. We replace correlated original variables with the first M principal components that capture the joint variation. While the criteria is that each component contains as much information as possible while being uncorrelated with previous components, there is thus no guarantee that \(Z_m\) are the best linear combinations of \(X_j\) in predicting the response. 
+
+```{r pcr, cache = F}
+control_pcr <- trainControl(method = "repeatedcv", number = 20, repeats = 5, 
+                      selectionFunction = "best")
+
+set.seed(1993)
+
+pcr.fit <- train(train_data_model_matrix, train_data$Solubility,
+                 method = "pcr",
+                 tuneGrid  = data.frame(ncomp = 1:229), #fine grid, but I want to test my computing power
+                 trControl = control_pcr,
+                 preProcess = c("center", "scale"))
+
+# test data
+x2 <- model.matrix(Solubility~.,test_data)[,-1]
+y2 <- test_data$Solubility
+
+predy2.pcr2 <- predict.train(pcr.fit, newdata = x2) #Remember that this predict.train function automatically center and scale test data using training data mean and sd
+mean((y2 - predy2.pcr2)^2)
+
+ggplot(pcr.fit, highlight = TRUE) + theme_bw()
+```
 
 
+# Section 3: Comparison
 
+## Problem E
 
+```{r}
+resamp <- resamples(list(lm = fit.lm,
+                         lasso = lasso.fit, 
+                         ridge = ridge.fit, 
+                         pcr = pcr.fit 
+                         ))
+summary(resamp)
 
+bwplot(resamp, metric = "RMSE")
+```
+Based on these results for RMSE, I would choose the ridge regression method for predicting solubility.
